@@ -10,7 +10,9 @@ import urllib.request
 import time, datetime
 
 FORMAT_URL_NEW_RELEASES = 'https://ridibooks.com/new-releases/%s?page=%s?%s'
+FILENAME_ALREADY_ADDED_JSON = 'already_tweeted_obj_id.json'
 
+already_file_path = os.path.expanduser(FILENAME_ALREADY_ADDED_JSON)
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
 api = tweepy.API(auth)
@@ -55,7 +57,6 @@ def check_new_released_book_info(skip_tweet=False):
 	if len(all_results_list) > 0:
 		already_tweeted_id_old_list = [] #['2129000044', '510000575']
 		already_tweeted_id_new_list = [] #['2129000044', '510000575']
-		already_file_path = os.path.expanduser('already_tweeted_obj_id.json')
 
 		if os.path.exists(already_file_path):
 			with open(already_file_path) as f:
@@ -99,6 +100,11 @@ def check_new_released_book_info(skip_tweet=False):
 
 
 if __name__ == '__main__':
+	print('Initializing...')
+	if os.path.exists(already_file_path):
+		os.remove(already_file_path)
+	check_new_released_book_info(True)
+
 	while True:
 		check_new_released_book_info()
 		time.sleep(60*TIME_REFRESH_MINUTE)
