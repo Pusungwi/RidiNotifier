@@ -53,16 +53,17 @@ def check_new_released_book_info(skip_tweet=False):
 
 	print('Checking new title... ' + str(datetime.datetime.now()))
 	if len(all_results_list) > 0:
-		already_tweeted_id_list = [] #['2129000044', '510000575']
+		already_tweeted_id_old_list = [] #['2129000044', '510000575']
+		already_tweeted_id_new_list = [] #['2129000044', '510000575']
 		already_file_path = os.path.expanduser('already_tweeted_obj_id.json')
 
 		if os.path.exists(already_file_path):
 			with open(already_file_path) as f:
-				already_tweeted_id_list = json.load(f)
+				already_tweeted_id_old_list = json.load(f)
 
 		for result_dict in all_results_list:
 			obj_id_str = result_dict['obj_id']
-			if obj_id_str not in already_tweeted_id_list:
+			if obj_id_str not in already_tweeted_id_old_list:
 				category_str = result_dict['tags']['category']
 				name_str = result_dict['tags']['name']
 				if len(name_str) > LENGTH_TITLE_LIMIT:
@@ -73,7 +74,7 @@ def check_new_released_book_info(skip_tweet=False):
 
 				if skip_tweet is True:
 					print(tweet_str)
-					already_tweeted_id_list.append(obj_id_str)
+					already_tweeted_id_new_list.append(obj_id_str)
 				else:
 					#tweet info
 					try:
@@ -83,13 +84,15 @@ def check_new_released_book_info(skip_tweet=False):
 					else:
 						print(tweet_str)
 						#add already obj list
-						already_tweeted_id_list.append(obj_id_str)
+						already_tweeted_id_new_list.append(obj_id_str)
 						#sleep code for protect the spam block
 						time.sleep(TIME_TWEET_UPDATE_SECOND)
+			else:
+				already_tweeted_id_new_list.append(obj_id_str)
 
 		with open(already_file_path, 'w') as f:
 			print('Dumping already tweeted titles...')
-			json.dump(already_tweeted_id_list, f)
+			json.dump(already_tweeted_id_new_list, f)
 	else:
 		print('ERROR: Not found new released titles list')
 	print('COMPLETE! - ' + str(datetime.datetime.now()))
