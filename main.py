@@ -1,4 +1,6 @@
 from credentials import *
+from config import *
+
 from bs4 import BeautifulSoup
 
 import os
@@ -7,10 +9,7 @@ import tweepy
 import urllib.request
 import time, datetime
 
-URL_NEW_RELEASES = 'https://ridibooks.com/new-releases/general?page=1'
-# 포맷 예제 : [일반] 편한식사 (보랏빛소) - 7800원 https://ridibooks.com/v2/Detail?id=2129000044
-FORMAT_PRINT_MSG = '[%s] %s (%s) - %s원 https://ridibooks.com/v2/Detail?id=%s'
-LENGTH_TITLE_LIMIT = 30
+FORMAT_URL_NEW_RELEASES = 'https://ridibooks.com/new-releases/%s?page=%s'
 
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
@@ -21,31 +20,47 @@ def find_title_func(tag):
 	return tag.has_attr('class') and tag.has_attr('data-track-params')
 
 
-def check_new_released_book_info():
+def get_new_released_book_info(genre, page=1):
+	results_list = []
+	target_url = FORMAT_URL_NEW_RELEASES % (genre, str(page))
+	
 	try:
-		#print('DEBUG: downloading new releases book html...')
-		recv_search_html = urllib.request.urlopen(URL_NEW_RELEASES)
+		#print('DEBUG: downloading new releases book html... ' +  target_url)
+		recv_search_html = urllib.request.urlopen(target_url)
 	except IOError:
-		print('IOError: html download problem')
+		print('IOError: html download problem : ' + target_url)
 	else:
 		recv_raw_html = recv_search_html.read()
 		decoded_html = recv_raw_html.decode('utf-8')
 		soup = BeautifulSoup(decoded_html, 'html.parser')
-		results_list = soup.find_all(find_title_func, class_='title_link trackable')
-		#tmp_result = json.loads(results_list[0]['data-track-params'])
-		#print(tmp_result)
+		raw_results_list = soup.find_all(find_title_func, class_='title_link trackable')
+		for raw_result in raw_results_list:
+			result_dict = json.loads(raw_result['data-track-params'])
+			results_list.append(result_dict)
+			#print(result_dict)
 
-		print('Checking new title... ' + str(datetime.datetime.now()))
+	return results_list
+	
+
+def check_new_released_book_info(skip_tweet=False):
+	all_results_list = []
+	all_results_list.extend(get_new_released_book_info('general', 1))
+	all_results_list.extend(get_new_released_book_info('general', 2))
+	all_results_list.extend(get_new_released_book_info('comic', 1))
+	all_results_list.extend(get_new_released_book_info('comic', 2))
+	#print(all_results_list)
+
+	print('Checking new title... ' + str(datetime.datetime.now()))
+	if len(all_results_list) > 0:
 		already_tweeted_id_list = [] #['2129000044', '510000575']
 		already_file_path = os.path.expanduser('already_tweeted_obj_id.json')
+
 		if os.path.exists(already_file_path):
 			with open(already_file_path) as f:
 				already_tweeted_id_list = json.load(f)
 
-		for result in results_list:
-			result_dict = json.loads(result['data-track-params'])
+		for result_dict in all_results_list:
 			obj_id_str = result_dict['obj_id']
-
 			if obj_id_str not in already_tweeted_id_list:
 				category_str = result_dict['tags']['category']
 				name_str = result_dict['tags']['name']
@@ -55,21 +70,31 @@ def check_new_released_book_info():
 				price_str = result_dict['tags']['price']
 				tweet_str = FORMAT_PRINT_MSG % (category_str, name_str, brand_str, price_str, obj_id_str)
 
-				#tweet info
-				try:
-					api.update_status(tweet_str)
-				except tweepy.TweepError as e:
-					print(e.reason)
-				else:
+				if skip_tweet is True:
 					print(tweet_str)
-					#add already obj list
 					already_tweeted_id_list.append(obj_id_str)
+				else:
+					#tweet info
+					try:
+						api.update_status(tweet_str)
+					except tweepy.TweepError as e:
+						print(e.reason)
+					else:
+						print(tweet_str)
+						#add already obj list
+						already_tweeted_id_list.append(obj_id_str)
+					#sleep code for protect the spam block
+					time.sleep(TIME_TWEET_UPDATE_SECOND)
 
 		with open(already_file_path, 'w') as f:
-				json.dump(already_tweeted_id_list, f)
+			print('Dumping already tweeted titles...')
+			json.dump(already_tweeted_id_list, f)
+	else:
+		print('ERROR: Not found new released titles list')
+	print('COMPLETE! - ' + str(datetime.datetime.now()))
 
 
 if __name__ == '__main__':
 	while True:
 		check_new_released_book_info()
-		time.sleep(60*4)
+		time.sleep(60*TIME_REFRESH_MINUTE)
