@@ -83,8 +83,8 @@ def check_new_released_book_info(skip_tweet=False):
 						print(tweet_str)
 						#add already obj list
 						already_tweeted_id_list.append(obj_id_str)
-					#sleep code for protect the spam block
-					time.sleep(TIME_TWEET_UPDATE_SECOND)
+						#sleep code for protect the spam block
+						time.sleep(TIME_TWEET_UPDATE_SECOND)
 
 		with open(already_file_path, 'w') as f:
 			print('Dumping already tweeted titles...')
