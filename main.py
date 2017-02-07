@@ -9,7 +9,7 @@ import tweepy
 import urllib.request
 import time, datetime
 
-FORMAT_URL_NEW_RELEASES = 'https://ridibooks.com/new-releases/%s?page=%s'
+FORMAT_URL_NEW_RELEASES = 'https://ridibooks.com/new-releases/%s?page=%s?%s'
 
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
@@ -22,7 +22,8 @@ def find_title_func(tag):
 
 def get_new_released_book_info(genre, page=1):
 	results_list = []
-	target_url = FORMAT_URL_NEW_RELEASES % (genre, str(page))
+	timestamp = str(int(time.time()))
+	target_url = FORMAT_URL_NEW_RELEASES % (genre, str(page), timestamp)
 	
 	try:
 		#print('DEBUG: downloading new releases book html... ' +  target_url)
