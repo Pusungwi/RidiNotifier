@@ -51,6 +51,8 @@ def check_new_released_book_info(skip_tweet=False):
 	all_results_list.extend(get_new_released_book_info('general', 2))
 	all_results_list.extend(get_new_released_book_info('comic', 1))
 	all_results_list.extend(get_new_released_book_info('comic', 2))
+	all_results_list.extend(get_new_released_book_info('fantasy', 1))
+	all_results_list.extend(get_new_released_book_info('fantasy', 2))
 	#print(all_results_list)
 
 	print('Checking new title... ' + str(datetime.datetime.now()))
