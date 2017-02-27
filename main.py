@@ -102,8 +102,6 @@ def check_new_released_book_info(skip_tweet=False):
 
 if __name__ == '__main__':
 	print('Initializing...')
-	if os.path.exists(already_file_path):
-		os.remove(already_file_path)
 	check_new_released_book_info(True)
 
 	while True:
