@@ -49,7 +49,7 @@ def check_new_released_book_info(skip_tweet=False):
 	all_results_list = []
 	all_results_list.extend(get_new_released_book_info('general', 1))
 	all_results_list.extend(get_new_released_book_info('general', 2))
-	all_results_list.extend(get_new_released_book_info('comic', 1))
+	all_results_list.extend(get_new_released_book_info('comic', 1))	
 	all_results_list.extend(get_new_released_book_info('comic', 2))
 	all_results_list.extend(get_new_released_book_info('fantasy', 1))
 	all_results_list.extend(get_new_released_book_info('fantasy', 2))
@@ -88,9 +88,7 @@ def check_new_released_book_info(skip_tweet=False):
 						#add already obj list
 						already_tweeted_id_list.append(obj_id_str)
 						#sleep code for protect the spam block
-						time.sleep(TIME_TWEET_UPDATE_SECOND)
-			else:
-				already_tweeted_id_list.append(obj_id_str)
+						time.sleep(TIME_TWEET_UPDATE_SECOND)	
 
 		with open(already_file_path, 'w') as f:
 			print('Dumping already tweeted titles...')
@@ -102,7 +100,10 @@ def check_new_released_book_info(skip_tweet=False):
 
 if __name__ == '__main__':
 	print('Initializing...')
-	check_new_released_book_info(True)
+	if os.path.exists(already_file_path):
+		os.remove(already_file_path)
+
+	check_new_released_book_info(skip_tweet=True)
 
 	while True:
 		check_new_released_book_info()
