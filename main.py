@@ -149,15 +149,15 @@ def check_new_released_event_info(skip_tweet=False):
 
 	print('Checking new event... ' + str(datetime.datetime.now()))
 	if len(all_results_list) > 0:
-		already_tweeted_id_list = [] #['2129000044', '510000575']
+		already_tweeted_id_list = [] #[6346, 6534]
 
 		if os.path.exists(already_event_json_path):
 			with open(already_event_json_path) as f:
 				already_tweeted_id_list = json.load(f)
 
 		for result_dict in all_results_list:
-			event_id_str = result_dict['event_id']
-			if event_id_str not in already_tweeted_id_list:
+			event_id = result_dict['event_id']
+			if event_id not in already_tweeted_id_list:
 				name_str = result_dict['event_title']
 				if len(name_str) > LENGTH_TITLE_LIMIT:
 					name_str = name_str[:LENGTH_TITLE_LIMIT - 3] + '...'
@@ -166,7 +166,7 @@ def check_new_released_event_info(skip_tweet=False):
 
 				if skip_tweet is True:
 					print(tweet_str)
-					already_tweeted_id_list.append(event_id_str)
+					already_tweeted_id_list.append(event_id)
 				else:
 					#tweet info
 					try:
@@ -176,7 +176,7 @@ def check_new_released_event_info(skip_tweet=False):
 					else:
 						print(tweet_str)
 						#add already obj list
-						already_tweeted_id_list.append(event_id_str)
+						already_tweeted_id_list.append(event_id)
 						#sleep code for protect the spam block
 						time.sleep(TIME_TWEET_UPDATE_SECOND)
 
