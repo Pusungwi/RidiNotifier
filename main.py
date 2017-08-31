@@ -1,4 +1,4 @@
-#from credentials import *
+from credentials import *
 from config import *
 
 from bs4 import BeautifulSoup
