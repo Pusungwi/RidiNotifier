@@ -1,4 +1,4 @@
-from credentials import *
+#from credentials import *
 from config import *
 
 from bs4 import BeautifulSoup
@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 import re
 import os
 import json
+import hashlib
 import tweepy
 import urllib.request
 import time, datetime
@@ -13,15 +14,17 @@ import time, datetime
 #format string
 FORMAT_URL_NEW_RELEASES = 'https://ridibooks.com/new-releases/%s?page=%s?%s'
 FORMAT_URL_EVENT = 'https://ridibooks.com/event/%s?page=%s?%s'
+FORMAT_URL_BOOK_RENEWAL = 'https://ridibooks.com/support/notice/512?%s'
 
 #get json path
 already_book_json_path = os.path.expanduser('already_tweeted_book_id.json')
 already_event_json_path = os.path.expanduser('already_tweeted_event_id.json')
+already_renewal_book_json_path = os.path.expanduser('renewal_book_hash.json')
 
 #tweepy auth
-auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
-auth.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
-api = tweepy.API(auth)
+#auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
+#auth.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
+#api = tweepy.API(auth)
 
 
 def find_title_func(tag):
@@ -186,19 +189,75 @@ def check_new_released_event_info(skip_tweet=False):
 	else:
 		print('ERROR: Not found new released event list')
 
+def check_renewal_book_info(skip_tweet=False):
+	timestamp = str(int(time.time()))
+	target_url = FORMAT_URL_BOOK_RENEWAL % (timestamp)
+	
+	try:
+		recv_search_html = urllib.request.urlopen(target_url)
+	except IOError:
+		print('IOError: html download problem : ' + target_url)
+	else:
+		renewal_info_regex = re.compile('<strong>(.*\/.*\/.*\/.*\n●.*)<br')
+		recv_raw_html = recv_search_html.read()
+		decoded_html = recv_raw_html.decode('utf-8')
+
+		already_tweeted_hash_list = []
+		if os.path.exists(already_renewal_book_json_path):
+			with open(already_renewal_book_json_path) as f:
+				already_tweeted_hash_list = json.load(f)
+
+		for raw_result in re.findall(renewal_info_regex, decoded_html):
+			result_str = re.sub(r'<\/strong>\s?<br \/>', r'', raw_result)
+			result_hash = hashlib.md5(result_str.encode())
+			resutl_hash_hex = result_hash.hexdigest()
+			#DEBUG PRINT
+			#print('MD5 : ' + resutl_hash_hex)
+			#print('--------------------------------------------')
+			if resutl_hash_hex not in already_tweeted_hash_list:
+				if len(result_str) > LENGTH_TWEET_LIMIT - len(HASHTAG_BOOK_RENEWAL):
+					result_str = result_str[:LENGTH_TWEET_LIMIT - (3 + len(HASHTAG_BOOK_RENEWAL))] + '...'
+				tweet_str = '%s %s' % (result_str, HASHTAG_BOOK_RENEWAL)
+				
+				if skip_tweet is True:
+					print(tweet_str)
+					already_tweeted_hash_list.append(resutl_hash_hex)
+				else:
+					#tweet info
+					try:
+						api.update_status(tweet_str)
+					except tweepy.TweepError as e:
+						print(e.reason)
+					else:
+						print(tweet_str)
+						#add already obj list
+						already_tweeted_hash_list.append(resutl_hash_hex)
+						#sleep code for protect the spam block
+						time.sleep(TIME_TWEET_UPDATE_SECOND)
+
+		with open(already_renewal_book_json_path, 'w') as f:
+			print('Dumping already tweeted event id list...')
+			json.dump(already_tweeted_hash_list, f)
+
 
 if __name__ == '__main__':
 	print('Initializing...')
+	#print(results_list)
 	if os.path.exists(already_book_json_path):
 		os.remove(already_book_json_path)
 	if os.path.exists(already_event_json_path):
 		os.remove(already_event_json_path)
+	if os.path.exists(already_renewal_book_json_path):
+		os.remove(already_renewal_book_json_path)
 
 	check_new_released_book_info(skip_tweet=True)
 	check_new_released_event_info(skip_tweet=True)
+	check_renewal_book_info(skip_tweet=True)
 
 	while True:
 		check_new_released_book_info()
 		check_new_released_event_info()
+		check_renewal_book_info()
+		
 		print('COMPLETE! - ' + str(datetime.datetime.now()))
 		time.sleep(60*TIME_REFRESH_MINUTE)
