@@ -1,4 +1,4 @@
-#from credentials import *
+from credentials import *
 from config import *
 
 from bs4 import BeautifulSoup
@@ -22,9 +22,9 @@ already_event_json_path = os.path.expanduser('already_tweeted_event_id.json')
 already_renewal_book_json_path = os.path.expanduser('renewal_book_hash.json')
 
 #tweepy auth
-#auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
-#auth.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
-#api = tweepy.API(auth)
+auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
+auth.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
+api = tweepy.API(auth)
 
 
 def find_title_func(tag):
@@ -193,6 +193,7 @@ def check_renewal_book_info(skip_tweet=False):
 	timestamp = str(int(time.time()))
 	target_url = FORMAT_URL_BOOK_RENEWAL % (timestamp)
 	
+	print('Checking new renewal book... ' + str(datetime.datetime.now()))
 	try:
 		recv_search_html = urllib.request.urlopen(target_url)
 	except IOError:
