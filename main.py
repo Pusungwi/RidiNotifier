@@ -236,7 +236,7 @@ def check_renewal_book_info(skip_tweet=False):
 						time.sleep(TIME_TWEET_UPDATE_SECOND)
 
 		with open(already_renewal_book_json_path, 'w') as f:
-			print('Dumping already tweeted event id list...')
+			print('Dumping already tweeted renewal hash list...')
 			json.dump(already_tweeted_hash_list, f)
 
 
