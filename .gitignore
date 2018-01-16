@@ -170,3 +170,7 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.gitignore.io/api/python,pycharm,windows
+
+already_tweeted_book_id.json
+already_tweeted_event_id.json
+renewal_book_hash.json
