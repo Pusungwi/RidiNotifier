@@ -210,18 +210,18 @@ def check_renewal_book_info(skip_tweet=False):
 		for raw_result in re.findall(renewal_info_regex, decoded_html):
 			result_str = re.sub(r'<\/strong>\s?<br \/>', r'', raw_result)
 			result_hash = hashlib.md5(result_str.encode())
-			resutl_hash_hex = result_hash.hexdigest()
+			result_hash_hex = result_hash.hexdigest()
 			#DEBUG PRINT
-			#print('MD5 : ' + resutl_hash_hex)
+			#print('MD5 : ' + result_hash_hex)
 			#print('--------------------------------------------')
-			if resutl_hash_hex not in already_tweeted_hash_list:
+			if result_hash_hex not in already_tweeted_hash_list:
 				if len(result_str) > LENGTH_TWEET_LIMIT - len(HASHTAG_BOOK_RENEWAL):
 					result_str = result_str[:LENGTH_TWEET_LIMIT - (3 + len(HASHTAG_BOOK_RENEWAL))] + '...'
 				tweet_str = '%s %s' % (result_str, HASHTAG_BOOK_RENEWAL)
 				
 				if skip_tweet is True:
 					print(tweet_str)
-					already_tweeted_hash_list.append(resutl_hash_hex)
+					already_tweeted_hash_list.append(result_hash_hex)
 				else:
 					#tweet info
 					try:
@@ -231,7 +231,7 @@ def check_renewal_book_info(skip_tweet=False):
 					else:
 						print(tweet_str)
 						#add already obj list
-						already_tweeted_hash_list.append(resutl_hash_hex)
+						already_tweeted_hash_list.append(result_hash_hex)
 						#sleep code for protect the spam block
 						time.sleep(TIME_TWEET_UPDATE_SECOND)
 
@@ -258,6 +258,6 @@ if __name__ == '__main__':
 		check_new_released_book_info()
 		check_new_released_event_info()
 		check_renewal_book_info()
-		
+
 		print('COMPLETE! - ' + str(datetime.datetime.now()))
 		time.sleep(60*TIME_REFRESH_MINUTE)
