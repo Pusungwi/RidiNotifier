@@ -81,7 +81,7 @@ def get_new_event_info(genre, page=1):
 			event_title = raw_result.string
 			event_url = 'https://ridibooks.com/event/' + str(event_id)
 
-			result_dict = {'event_id':event_id, 'event_title':event_title, 'event_url':event_url}
+			result_dict = {'event_genre':genre, 'event_id':event_id, 'event_title':event_title, 'event_url':event_url}
 			results_list.append(result_dict)
 			#print(result_dict)
 
@@ -165,11 +165,26 @@ def check_new_released_event_info(skip_tweet=False):
 		for result_dict in all_results_list:
 			event_id = result_dict['event_id']
 			if event_id not in already_tweeted_id_list:
+				category_str = ''
+				result_event = result_dict['event_genre']
+				if result_event == 'general':
+					category_str = '일반'
+				elif result_event == 'comic':
+					category_str = '만화'
+				elif result_event == 'fantasy':
+					category_str = '판타지'
+				elif result_event == 'romance':
+					category_str = '로맨스'
+				elif result_event == 'bl':
+					category_str = 'BL'
+				else:
+					category_str = '?'
+
 				name_str = result_dict['event_title']
 				if len(name_str) > LENGTH_TITLE_LIMIT:
 					name_str = name_str[:LENGTH_TITLE_LIMIT - 3] + '...'
 				url_str = result_dict['event_url']
-				tweet_str = FORMAT_PRINT_EVENT_MSG % (name_str, url_str)
+				tweet_str = FORMAT_PRINT_EVENT_MSG % (category_str, name_str, url_str)
 
 				if skip_tweet is True:
 					print(tweet_str)
