@@ -12,7 +12,7 @@ import urllib.request
 import time, datetime
 
 #format string
-FORMAT_URL_NEW_RELEASES = 'https://ridibooks.com/new-releases/%s?page=%s?%s'
+FORMAT_URL_NEW_RELEASES = 'https://ridibooks.com/new-releases/%s?order=recent?page=%s?%s'
 FORMAT_URL_EVENT = 'https://ridibooks.com/event/%s?page=%s?%s'
 FORMAT_URL_BOOK_RENEWAL = 'https://ridibooks.com/support/notice/512?%s'
 
