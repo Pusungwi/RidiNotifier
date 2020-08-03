@@ -64,7 +64,6 @@ def get_new_event_info(genre, page=1):
 		recv_search_html = urllib.request.urlopen(target_url)
 	except IOError:
 		print('IOError: html download problem : ' + target_url)
-	except 
 	else:
 		event_id_regex = re.compile('\/event\/(\d{1,})')
 		recv_raw_html = recv_search_html.read()
