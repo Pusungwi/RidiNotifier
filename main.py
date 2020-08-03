@@ -64,6 +64,7 @@ def get_new_event_info(genre, page=1):
 		recv_search_html = urllib.request.urlopen(target_url)
 	except IOError:
 		print('IOError: html download problem : ' + target_url)
+	except 
 	else:
 		event_id_regex = re.compile('\/event\/(\d{1,})')
 		recv_raw_html = recv_search_html.read()
@@ -272,12 +273,10 @@ if __name__ == '__main__':
 
 	check_new_released_book_info(skip_tweet=True)
 	check_new_released_event_info(skip_tweet=True)
-	check_renewal_book_info(skip_tweet=True)
 
 	while True:
 		check_new_released_book_info()
 		check_new_released_event_info()
-		check_renewal_book_info()
 
 		print('COMPLETE! - ' + str(datetime.datetime.now()))
 		time.sleep(60*TIME_REFRESH_MINUTE)
