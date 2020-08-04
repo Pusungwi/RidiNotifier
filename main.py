@@ -42,14 +42,27 @@ def get_new_released_book_info(genre, page=1):
 	except IOError:
 		print('IOError: html download problem : ' + target_url)
 	else:
-		recv_raw_html = recv_search_html.read()
+		retry_count = 0
+		while True:
+			try:
+				recv_raw_html = recv_search_html.read()
+			except http.client.IncompleteRead as e:
+				#print('Failed to read html. retrying...')
+				retry_count += 1
+				if retry_count == RETRY_READ_URL_COUNT:
+					recv_raw_html = e.partial
+					break
+				else:
+					time.sleep(2)
+			else:
+				break
 		decoded_html = recv_raw_html.decode('utf-8')
 		soup = BeautifulSoup(decoded_html, 'html.parser')
 		raw_results_list = soup.find_all(find_title_func, class_='title_link trackable')
 		for raw_result in raw_results_list:
 			result_dict = json.loads(raw_result['data-track-params'])
 			results_list.append(result_dict)
-			#print(result_dict)
+			print(result_dict)
 
 	return results_list
 
@@ -66,7 +79,20 @@ def get_new_event_info(genre, page=1):
 		print('IOError: html download problem : ' + target_url)
 	else:
 		event_id_regex = re.compile('\/event\/(\d{1,})')
-		recv_raw_html = recv_search_html.read()
+		retry_count = 0
+		while True:
+			try:
+				recv_raw_html = recv_search_html.read()
+			except http.client.IncompleteRead as e:
+				#print('Failed to read html. retrying...')
+				retry_count += 1
+				if retry_count == RETRY_READ_URL_COUNT:
+					recv_raw_html = e.partial
+					break
+				else:
+					time.sleep(2)
+			else:
+				break
 		decoded_html = recv_raw_html.decode('utf-8')
 		soup = BeautifulSoup(decoded_html, 'html.parser')
 		raw_results_list = soup.find_all("h3", class_='event_title')
@@ -92,10 +118,13 @@ def check_new_released_book_info(skip_tweet=False):
 	all_results_list = []
 	all_results_list.extend(get_new_released_book_info('general', 1))
 	all_results_list.extend(get_new_released_book_info('general', 2))
-	all_results_list.extend(get_new_released_book_info('comic', 1))	
+	time.sleep(2)
+	all_results_list.extend(get_new_released_book_info('comic', 1))
 	all_results_list.extend(get_new_released_book_info('comic', 2))
+	time.sleep(2)
 	all_results_list.extend(get_new_released_book_info('fantasy', 1))
 	all_results_list.extend(get_new_released_book_info('fantasy', 2))
+	time.sleep(2)
 	#print(all_results_list)
 
 	print('Checking new title... ' + str(datetime.datetime.now()))
@@ -144,14 +173,19 @@ def check_new_released_event_info(skip_tweet=False):
 	all_results_list = []
 	all_results_list.extend(get_new_event_info('general', 1))
 	all_results_list.extend(get_new_event_info('general', 2))
-	all_results_list.extend(get_new_event_info('comic', 1))	
+	time.sleep(2)
+	all_results_list.extend(get_new_event_info('comic', 1))
 	all_results_list.extend(get_new_event_info('comic', 2))
+	time.sleep(2)
 	all_results_list.extend(get_new_event_info('fantasy', 1))
 	all_results_list.extend(get_new_event_info('fantasy', 2))
+	time.sleep(2)
 	all_results_list.extend(get_new_event_info('romance', 1))
 	all_results_list.extend(get_new_event_info('romance', 2))
+	time.sleep(2)
 	all_results_list.extend(get_new_event_info('bl', 1))
 	all_results_list.extend(get_new_event_info('bl', 2))
+	time.sleep(2)
 	#print(all_results_list)
 
 	print('Checking new event... ' + str(datetime.datetime.now()))
@@ -262,7 +296,6 @@ def check_renewal_book_info(skip_tweet=False):
 
 if __name__ == '__main__':
 	print('Initializing...')
-	#print(results_list)
 	if os.path.exists(already_book_json_path):
 		os.remove(already_book_json_path)
 	if os.path.exists(already_event_json_path):
