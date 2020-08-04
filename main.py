@@ -62,7 +62,7 @@ def get_new_released_book_info(genre, page=1):
 		for raw_result in raw_results_list:
 			result_dict = json.loads(raw_result['data-track-params'])
 			results_list.append(result_dict)
-			print(result_dict)
+			#print(result_dict)
 
 	return results_list
 
