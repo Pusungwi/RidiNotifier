@@ -9,6 +9,7 @@ import json
 import hashlib
 import tweepy
 import urllib.request
+import http.client
 import time, datetime
 
 #format string
@@ -46,7 +47,7 @@ def get_new_released_book_info(genre, page=1):
 		while True:
 			try:
 				recv_raw_html = recv_search_html.read()
-			except http.client.IncompleteRead as e:
+			except (http.client.IncompleteRead) as e:
 				#print('Failed to read html. retrying...')
 				retry_count += 1
 				if retry_count == RETRY_READ_URL_COUNT:
@@ -83,7 +84,7 @@ def get_new_event_info(genre, page=1):
 		while True:
 			try:
 				recv_raw_html = recv_search_html.read()
-			except http.client.IncompleteRead as e:
+			except (http.client.IncompleteRead) as e:
 				#print('Failed to read html. retrying...')
 				retry_count += 1
 				if retry_count == RETRY_READ_URL_COUNT:
